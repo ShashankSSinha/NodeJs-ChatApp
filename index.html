@@ -1,0 +1,191 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Socket.IO chat</title>
+	
+    <style>
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      body { font: 13px Helvetica, Arial; }
+      #msg-ctrl form { background: #000; padding: 3px; position: fixed; bottom: 0; width: 100%; }
+      #msg-ctrl form input { border: 0; padding: 10px; width: 90%; margin-right: .5%; }
+      #msg-ctrl form button { width: 9%; background: rgb(130, 224, 255); border: none; padding: 10px; }
+      #messages { list-style-type: none; margin: 0; padding: 0; }
+      #messages li { padding: 2px 2px; }
+      #messages li:nth-child(odd) { background: #eee; }
+	  
+	  .circular {
+		    background-repeat: no-repeat;
+		    background-position: 50%;
+		    border-radius: 50%;
+		    width: 40px;
+		    height: 40px;
+	    }
+	
+	  #active-users { list-style-type: none; margin: 0; padding: 0; }
+      #active-users li { padding: 2px 2px; width: 295px;}
+      #active-users li { background: #eee; }
+	  
+	  #overlay_box { background: #E0E5E5; padding: 3px; position: relative; bottom: 0; width: 100%; }
+      #overlay_box input { border: 1; padding: 10px; width: 20%; margin-right: .5%; }
+      #overlay_box button { width: 12%; background: rgb(130, 224, 255); border: none; padding: 10px; }
+	  
+	  #overlay{
+		position: absolute;
+		width: 100%;
+		height: 100%;
+		z-index: 500;
+		opacity: .5;
+		background-color: grey;
+	  }
+	  #overlay_box{
+		z-index: 1000;
+		top: 40%;
+		position: relative;
+		top: 0;
+		left: 0;	
+		border: 2px;	
+	  }
+	  
+    </style>
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.3.0/css/font-awesome.min.css">
+  </head>
+  <body>
+    <div id="overlay">
+	</div>
+	<center>
+	<div id="overlay_box">
+		<!--<form id="new-user-form" action="" style="position: relative;width: 60%">-->
+			&nbsp;&nbsp;&nbsp;&nbsp;Male:<input type="radio" name="sex" value="male" checked><br>
+			Female:<input type="radio" name="sex" value="female">
+			<br>
+			<input type="text" id="username" placeholder="User Name"/><button id="new-user-form">Join chat room</button>
+		<!--</form>-->
+	</div>
+	</center>
+	<div style="height: 550px">
+	    <div id="chat-list" style="width: 80%;height: 550px; overflow-y: auto">
+			<ul id="messages"></ul>
+		</div>	
+	</div>
+	<div style="position: absolute;left: 82%;top: 4%">
+		<h3>Users in chat room:</h3>
+		<ul id="active-users">
+			
+			<!--<li><i class="fa fa-circle" style="color:green"></i><div class="circular" style = "background-image: url(boy.png)"></div><b><i>shashank</i></b></li>
+			<li><i class="fa fa-circle" style="color:green"></i><div class="circular" style = "background-image: url(girl.png)"></div><b><i>shabana</i></b></li>-->
+		</ul>
+	</div>
+	<div id="msg-ctrl">
+		<form id="msg-ctrl-form" action="" style="position: relative;width: 80%">
+			<input id="m" autocomplete="off" /><button>Send</button>
+		</form>
+	</div>
+	
+	<br>
+	<img src="logo.png">
+	
+    <script src="https://cdn.socket.io/socket.io-1.2.0.js"></script>
+    <script src="http://code.jquery.com/jquery-1.11.1.js"></script>
+	<!--<script src="jquery-notify.js"</script>-->
+    <script>
+	  /*$(window).load(function () {
+			$("#overlay_box").dialog();
+		});*/
+	
+      var socket = io();
+	  var username;
+	  
+	  var focused = true;
+
+	  window.onfocus = function() {
+		focused = true;
+	  };
+	  
+	  window.onblur = function() {
+		focused = false;
+	  };
+	  
+	  $('#new-user-form').click(function(){
+	        $('#overlay').hide();
+			$('#overlay_box').hide();
+			username = $('#username').val();
+			//alert(username);
+			socket.emit('new_username', username);
+	        //return false;
+      });
+	  
+      $('#msg-ctrl-form').submit(function(){
+			var msg_packet = {"username": username, "message": $('#m').val()};
+	        socket.emit('chat message', msg_packet);
+	        $('#m').val('');
+	        return false;
+      });
+	  
+	  (function($) {
+		$.fn.hasScrollBar = function() {
+			return this.get(0).scrollHeight > this.height();
+			}
+		})(jQuery);
+		
+	  function spawnNotification(theBody,theIcon,theTitle) {
+					  var options = {
+					      body: theBody,
+					      icon: theIcon
+					  }
+					  var n = new Notification(theTitle,options);
+		}
+				
+		function notifyMe(theBody,theIcon,theTitle) {
+			  // Let's check if the browser supports notifications
+			  if (!("Notification" in window)) {
+			    alert("This browser does not support desktop notification");
+			  }
+
+			  // Let's check whether notification permissions have already been granted
+			  else if (Notification.permission === "granted") {
+			    // If it's okay let's create a notification
+			    spawnNotification(theBody,theIcon,theTitle);
+			  }
+
+			  // Otherwise, we need to ask the user for permission
+			  else if (Notification.permission !== 'denied') {
+			    Notification.requestPermission(function (permission) {
+			      // If the user accepts, let's create a notification
+			      if (permission === "granted") {
+			        //spawnNotification(theBody,theIcon,theTitle);
+			      }
+			    });
+			  }
+
+			  // At last, if the user has denied notifications, and you 
+			  // want to be respectful there is no need to bother them any more.
+		}
+		
+	  socket.on('chat message', function(msg_packet){
+	    //alert(msg_packet.username+" "+username);
+		//if(msg_packet.username !== username)
+		//var w = window.innerWidth;
+		//alert(w);
+		if(focused == false)
+		{
+			notifyMe(msg_packet.message,'boy.png',msg_packet.username);
+		}	
+		$('#messages').append('<li><div class="circular" style = "background-image: url(boy.png)"></div><b>'+msg_packet.username+':</b>&nbsp;'+msg_packet.message+'</li>');
+		if($("#chat-list").hasScrollBar()){
+			var newscrollHeight = $("#chat-list").prop("scrollHeight") - 20; 
+			//alert(newscrollHeight);
+			$("#chat-list").animate({ scrollTop: newscrollHeight }, 800);
+		}
+	  });	
+	  
+	  socket.on('online users', function(online_users){
+	  //alert(online_users)
+	  $('#active-users').empty();
+		online_users.forEach(function(user){
+			 //alert(user);
+			 $('#active-users').append('<li><i class="fa fa-circle" style="color:green"></i><div class="circular" style = "background-image: url(boy.png)"></div><b><i>'+user+'</i></b></li>');
+		});
+	  });
+	 </script> 
+  </body>
+</html>
