@@ -3,6 +3,9 @@ var app = express();
 var http = require('http').Server(app);
 var io = require('socket.io')(http);
 
+var server_port = process.env.OPENSHIFT_NODEJS_PORT || 8080
+var server_ip_address = process.env.OPENSHIFT_NODEJS_IP || '127.0.0.1'
+
 app.use(express.static(__dirname));
 
 app.get('/', function(req, res){
@@ -37,6 +40,10 @@ io.on('connection', function(socket){
   
 });
 
-http.listen(4000, function(){
+/*http.listen(4000, function(){
   console.log('listening on :4000');
+});*/
+
+http.listen(server_port, server_ip_address, function(){
+  console.log("Listening on " + server_ip_address + ", server_port " + server_port)
 });
