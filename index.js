@@ -19,9 +19,9 @@ io.on('connection', function(socket){
   //console.log('a user connected');
   sockets.push(socket);
   
-  socket.on('new_username', function(new_username){
-    console.log(new_username); 
-	online_users.push(new_username);
+  socket.on('user_packet', function(user_packet){
+    console.log(user_packet); 
+	online_users.push(user_packet);
 	io.emit('online users', online_users);
   });
   
