@@ -85,6 +85,10 @@
 	<br>
 	<img src="logo.png">
 	
+	<audio preload="auto">
+		<source src="https://css-tricks.com/examples/SoundOnHover/audio/beep.mp3" controls></source>
+	</audio>
+	
     <script src="https://cdn.socket.io/socket.io-1.2.0.js"></script>
     <script src="http://code.jquery.com/jquery-1.11.1.js"></script>
 	<!--<script src="jquery-notify.js"</script>-->
@@ -176,7 +180,7 @@
 			  // want to be respectful there is no need to bother them any more.
 		}
 		
-	  var snd = new Audio("beep.mp3");
+	  var beep = $('audio')[0];
 	  
 	  socket.on('chat message', function(msg_packet){
 	    //alert(msg_packet.username+" "+username);
@@ -186,7 +190,7 @@
 		if(focused == false)
 		{
 			notifyMe(msg_packet.message,msg_packet.icon+'.png',msg_packet.username);
-			var snd = new Audio("beep.mp3");
+			beep.play();
 		}	
 		$('#messages').append('<li><div class="circular" style = "background-image: url('+msg_packet.icon+'.png)"></div><b>'+msg_packet.username+':</b>&nbsp;'+msg_packet.message+'</li>');
 		if($("#chat-list").hasScrollBar()){
