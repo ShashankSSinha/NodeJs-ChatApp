@@ -176,6 +176,8 @@
 			  // want to be respectful there is no need to bother them any more.
 		}
 		
+	  var snd = new Audio("beep.mp3");
+	  
 	  socket.on('chat message', function(msg_packet){
 	    //alert(msg_packet.username+" "+username);
 		//if(msg_packet.username !== username)
@@ -184,6 +186,7 @@
 		if(focused == false)
 		{
 			notifyMe(msg_packet.message,msg_packet.icon+'.png',msg_packet.username);
+			var snd = new Audio("beep.mp3");
 		}	
 		$('#messages').append('<li><div class="circular" style = "background-image: url('+msg_packet.icon+'.png)"></div><b>'+msg_packet.username+':</b>&nbsp;'+msg_packet.message+'</li>');
 		if($("#chat-list").hasScrollBar()){
