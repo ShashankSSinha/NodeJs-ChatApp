@@ -56,8 +56,8 @@
 	<center>
 	<div id="overlay_box">
 		<!--<form id="new-user-form" action="" style="position: relative;width: 60%">-->
-			&nbsp;&nbsp;&nbsp;&nbsp;Male:<input type="radio" name="sex" value="male" checked><br>
-			Female:<input type="radio" name="sex" value="female">
+			&nbsp;&nbsp;&nbsp;&nbsp;Male:<input type="radio" name="sex" class="sex" value="boy" checked><br>
+			Female:<input type="radio" name="sex" class="sex" value="girl">
 			<br>
 			<input type="text" id="username" placeholder="User Name"/><button id="new-user-form">Join chat room</button>
 		<!--</form>-->
@@ -97,6 +97,7 @@
 	  var username;
 	  
 	  var focused = true;
+	  var sex;
 
 	  window.onfocus = function() {
 		focused = true;
@@ -106,17 +107,30 @@
 		focused = false;
 	  };
 	  
+	  /*$(".sex").change(function(){ 
+        if($(this).is(":checked")){ 
+            sex = $(this).val(); 
+        }
+      });*/
+	  
 	  $('#new-user-form').click(function(){
 	        $('#overlay').hide();
 			$('#overlay_box').hide();
+			$('.sex').each(function(){
+				if($(this).is(":checked")){ 
+					sex = $(this).val(); 
+				}
+			});
+			//alert(sex);
 			username = $('#username').val();
 			//alert(username);
-			socket.emit('new_username', username);
+			var user_packet = {"username": username, "icon": sex};
+			socket.emit('user_packet', user_packet);
 	        //return false;
       });
 	  
       $('#msg-ctrl-form').submit(function(){
-			var msg_packet = {"username": username, "message": $('#m').val()};
+			var msg_packet = {"username": username, "icon": sex, "message": $('#m').val()};
 	        socket.emit('chat message', msg_packet);
 	        $('#m').val('');
 	        return false;
@@ -169,14 +183,14 @@
 		//alert(w);
 		if(focused == false)
 		{
-			notifyMe(msg_packet.message,'boy.png',msg_packet.username);
+			notifyMe(msg_packet.message,msg_packet.icon+'.png',msg_packet.username);
 		}	
-		$('#messages').append('<li><div class="circular" style = "background-image: url(boy.png)"></div><b>'+msg_packet.username+':</b>&nbsp;'+msg_packet.message+'</li>');
+		$('#messages').append('<li><div class="circular" style = "background-image: url('+msg_packet.icon+'.png)"></div><b>'+msg_packet.username+':</b>&nbsp;'+msg_packet.message+'</li>');
 		if($("#chat-list").hasScrollBar()){
 			var newscrollHeight = $("#chat-list").prop("scrollHeight") - 20; 
 			//alert(newscrollHeight);
 			$("#chat-list").animate({ scrollTop: newscrollHeight }, 800);
-		}
+		}o
 	  });	
 	  
 	  socket.on('online users', function(online_users){
@@ -184,7 +198,7 @@
 	  $('#active-users').empty();
 		online_users.forEach(function(user){
 			 //alert(user);
-			 $('#active-users').append('<li><i class="fa fa-circle" style="color:green"></i><div class="circular" style = "background-image: url(boy.png)"></div><b><i>'+user+'</i></b></li>');
+			 $('#active-users').append('<li><i class="fa fa-circle" style="color:green"></i><div class="circular" style = "background-image: url('+user.icon+'.png)"></div><b><i>'+user.username+'</i></b></li>');
 		});
 	  });
 	 </script> 
